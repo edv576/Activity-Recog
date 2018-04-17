@@ -52,12 +52,12 @@ def process_test_data():
     return testing_data
 
 #Call the functions to create training and testing data
-#training_data = create_train_data()
-#testing_data = process_test_data()
+training_data = create_train_data()
+testing_data = process_test_data()
 
 #Call the functions to load training and testing data from the previously created files
-train_data = np.load('train_data.npy')
-test_data = np.load('test_data.npy')
+#train_data = np.load('train_data.npy')
+#test_data = np.load('test_data.npy')
 
 
 
