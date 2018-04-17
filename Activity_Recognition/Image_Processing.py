@@ -5,9 +5,9 @@ from random import shuffle
 from tqdm import tqdm
 
 #Training images directory
-TRAIN_DIR = 'D:/Shared_Projects2/Assig 4/Dogs_vs_Cats/Dogs_vs_Cats/train'
+TRAIN_DIR = 'D:/Shared_Projects2/Assig 4/Activity_Recognition/Activity_Recognition/train'
 #Testing images directory
-TEST_DIR = 'D:/Shared_Projects2/Assig 4/Dogs_vs_Cats/Dogs_vs_Cats/test1'
+TEST_DIR = 'D:/Shared_Projects2/Assig 4/Activity_Recognition/Activity_Recognition/test1'
 
 #Size of the image
 IMAGE_SIZE = 120
