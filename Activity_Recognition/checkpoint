@@ -1,0 +1,2 @@
+model_checkpoint_path: "D:\\Shared_Projects2\\Assig 4\\Activity Recog\\Activity_Recognition\\activity_recognition-0.001-6conv-basic-video.model"
+all_model_checkpoint_paths: "D:\\Shared_Projects2\\Assig 4\\Activity Recog\\Activity_Recognition\\activity_recognition-0.001-6conv-basic-video.model"

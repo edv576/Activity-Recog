@@ -56,6 +56,7 @@ def process_test_data():
     np.save('test_data.npy', testing_data)
     return testing_data
 
+#Gets middle frames from videos and gives them names according to format [Name of activity].[Number of video] _[Number of frame] .jpg
 def get_video_frames():
     f = 0
     for filename in glob.glob(os.path.join(TRAIN_VIDEO_DIR, '*.avi')):
@@ -87,10 +88,10 @@ def get_video_frames():
 #testing_data = process_test_data()
 
 #Call the functions to load training and testing data from the previously created files
-#train_data = np.load('train_data.npy')
+train_data = np.load('train_data.npy')
 #test_data = np.load('test_data.npy')
 
-get_video_frames()
+#get_video_frames()
 
 
 

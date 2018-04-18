@@ -36,8 +36,8 @@ convnet = max_pool_2d(convnet, 2)
 convnet = fully_connected(convnet, 1024, activation='relu')
 convnet = dropout(convnet, 0.8)
 
-convnet = fully_connected(convnet, 2, activation='softmax')
-convnet = regression(convnet, optimizer='adam', learning_rate=ip.LR, loss='categorical_crossentropy', name='targets')
+convnet = fully_connected(convnet, 5, activation='softmax')
+convnet = regression(convnet, optimizer='adam', learning_rate=ip.LR, loss='categorical_crossentropy', name='target')
 
 #Creates the model using the configuration created
 model = tflearn.DNN(convnet, tensorboard_dir='log')
@@ -57,17 +57,18 @@ if os.path.exists('{}.meta'.format(ip.MODEL_NAME)):
     print('Model loaded')
 
 #Gets train and test data
-train = ip.train_data[:-500]
-test = ip.test_data[-500:]
+train = ip.train_data
+#test = ip.test_data
 
 #Gives format to the data and the labels
 x = np.array([i[0] for i in train]).reshape(-1, ip.IMAGE_SIZE, ip.IMAGE_SIZE, 1)
 y = [i[1] for i in train]
 y = np.reshape(y, [-1, 5])
+print(y)
 
-test_x = np.array([i[0] for i in test]).reshape(-1, ip.IMAGE_SIZE, ip.IMAGE_SIZE, 1)
-test_y = [i[1] for i in test]
-test_y = np.reshape(test_y, [-1, 5])
+#test_x = np.array([i[0] for i in test]).reshape(-1, ip.IMAGE_SIZE, ip.IMAGE_SIZE, 1)
+#test_y = [i[1] for i in test]
+#test_y = np.reshape(test_y, [-1, 5])
 
 #model.fit({'input':x}, {'targets':y}, n_epoch=5, validation_set=({'input':test_x}, {'targets':test_y}), snapshot_step=500,
 #          show_metric=True, run_id=ip.MODEL_NAME)

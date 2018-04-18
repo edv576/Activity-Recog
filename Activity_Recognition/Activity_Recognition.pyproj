@@ -6,7 +6,7 @@
     <ProjectGuid>a48760b5-6680-4d93-a6bb-e703c062f11a</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>Image_Processing.py</StartupFile>
+    <StartupFile>Model_Activity_Recognition.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -28,6 +28,9 @@
     </Compile>
     <Compile Include="Image_Processing.py" />
     <Compile Include="KFolds_example.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Mnist classification.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model_Activity_Recognition.py">
