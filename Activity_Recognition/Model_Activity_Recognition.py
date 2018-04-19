@@ -12,7 +12,7 @@ from sklearn.model_selection import KFold
 tf.reset_default_graph()
 
 #Format of the input data for the model
-convnet = input_data(shape=[None, ip.IMAGE_SIZE, ip.IMAGE_SIZE, 1], name='input')
+convnet = input_data(shape=[None, ip.IMAGE_SIZE, ip.IMAGE_SIZE, 3], name='input')
 
 #Layers of the model
 convnet = conv_2d(convnet, 32, 2, activation='relu')
@@ -52,16 +52,16 @@ model = tflearn.DNN(convnet, tensorboard_dir='log')
 #print(model.predict([x_test[1]]))
 
 #Loads the model if it was created previously
-if os.path.exists('{}.meta'.format(ip.MODEL_NAME)):
-    model.load(ip.MODEL_NAME)
-    print('Model loaded')
+#if os.path.exists('{}.meta'.format(ip.MODEL_NAME)):
+#    model.load(ip.MODEL_NAME)
+#    print('Model loaded')
 
 #Gets train and test data
 train = ip.train_data
 #test = ip.test_data
 
 #Gives format to the data and the labels
-x = np.array([i[0] for i in train]).reshape(-1, ip.IMAGE_SIZE, ip.IMAGE_SIZE, 1)
+x = np.array([i[0] for i in train]).reshape(-1, ip.IMAGE_SIZE, ip.IMAGE_SIZE, 3)
 y = [i[1] for i in train]
 y = np.reshape(y, [-1, 5])
 print(y)
