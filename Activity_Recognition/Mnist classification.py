@@ -13,6 +13,8 @@ X = X.reshape([-1, 28, 28, 1])
 testX = testX.reshape([-1, 28, 28, 1])
 #print(Y, len(Y))
 
+
+
 # Building convolutional network
 network = input_data(shape=[None, 28, 28, 1], name='input')
 network = conv_2d(network, 32, 3, activation='relu', regularizer="L2")

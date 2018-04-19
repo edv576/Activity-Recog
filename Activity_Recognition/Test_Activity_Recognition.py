@@ -10,12 +10,12 @@ fig = plt.figure()
 
 #Iterates over the number of examples we want to test
 #[:12] means take all examples from the beginning to the number 12
-for num, data in enumerate(test_data[:12]):
+for num, data in enumerate(test_data):
     img_num = data[1]
     img_data = data[0]
     
     
-    y = fig.add_subplot(3, 4, num + 1)
+    y = fig.add_subplot(5, 7, num + 1)
     orig = img_data
     data = img_data.reshape(ip.IMAGE_SIZE, ip.IMAGE_SIZE, 1)
     

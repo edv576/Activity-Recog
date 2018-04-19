@@ -9,10 +9,13 @@ from tqdm import tqdm
 #Training images directory
 TRAIN_DIR = '../data/train'
 #Testing images directory
-TEST_DIR = '../data/test1'
+TEST_DIR = '../data/test01'
 
 #Training videos directory
 TRAIN_VIDEO_DIR = '../data/ucf-101'
+
+#Tes videos directory
+TEST_VIDEO_DIR = '../data/own'
 
 #Size of the image
 IMAGE_SIZE = 120
@@ -57,9 +60,9 @@ def process_test_data():
     return testing_data
 
 #Gets middle frames from videos and gives them names according to format [Name of activity].[Number of video] _[Number of frame] .jpg
-def get_video_frames():
+def get_video_frames(route, destRoute):
     f = 0
-    for filename in glob.glob(os.path.join(TRAIN_VIDEO_DIR, '*.avi')):
+    for filename in glob.glob(os.path.join(route, '*.avi')):
         vidcap = cv2.VideoCapture(filename)        
         length = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
         middle_frame = int(length/2)
@@ -76,10 +79,41 @@ def get_video_frames():
         my_video_name = my_video_name.split(".")[0]
         my_video_name = my_video_name.split("_")[-3]
         my_video_name = my_video_name.lower()
-        print(length, middle_frame, second_frame, third_frame, fps, time_length, my_video_name, ret)
-        cv2.imwrite(TRAIN_DIR + '/' + my_video_name + '.' + str(f + 1) + '_' + str(middle_frame) + '.jpg', image)
+        print(length, middle_frame, second_frame, third_frame, fps, time_length, my_video_name, ret, middle_frame)
+        cv2.imwrite(destRoute + '/' + my_video_name + '.' + str(f + 1) + '_' + str(middle_frame) + '.jpg', image)
         f = f + 1
+        vidcap.release()
 
+def get_video_frames_test(route, destRoute):
+    f = 0
+    for filename in glob.glob(os.path.join(route, '*.avi')):
+        vidcap = cv2.VideoCapture(filename)        
+        length = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
+        middle_frame = int(length/2)
+        r1 = range(0, middle_frame)
+        r2 = range(middle_frame + 1, length - 1)
+        second_frame = random.choice(r1)
+        third_frame = random.choice(r2)
+
+        rval, frame = vidcap.read()
+        c = 1
+        while rval and c < middle_frame:
+            rval, frame = vidcap.read()
+            c = c + 1
+
+        fps = int(vidcap.get(cv2.CAP_PROP_FPS))
+        time_length = length/fps
+        #frame_no = (50 /(time_length*fps))
+        #vidcap.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
+        #ret,image = vidcap.read()
+        my_video_name = filename.split("\\")[-1]
+        my_video_name = my_video_name.split(".")[0]
+        #my_video_name = my_video_name.split("_")[-3]
+        my_video_name = my_video_name.lower()
+        print(length, middle_frame, second_frame, third_frame, fps, time_length, my_video_name, rval)
+        cv2.imwrite(destRoute + '/' + my_video_name + '.' + str(f + 1) + '_' + str(middle_frame) + '.jpg', frame)
+        f = f + 1
+        vidcap.release()
 
 
 
@@ -89,9 +123,10 @@ def get_video_frames():
 
 #Call the functions to load training and testing data from the previously created files
 train_data = np.load('train_data.npy')
-#test_data = np.load('test_data.npy')
+test_data = np.load('test_data.npy')
 
-#get_video_frames()
+#get_video_frames(TRAIN_VIDEO_DIR, TEST_DIR)
+#get_video_frames_test(TEST_VIDEO_DIR, TEST_DIR)
 
 
 

@@ -28,6 +28,7 @@ def cross_validate(session, model, train_x_all, train_y_all, split_size=10):
     model.fit(train_x, train_y, n_epoch=5, validation_set=({'input':val_x}, {'target':val_y}), snapshot_step=500,
           show_metric=True, run_id=ip.MODEL_NAME)
 
+
     #print(tfl.Accuracy())
 
     #Add results of accuracy to array
