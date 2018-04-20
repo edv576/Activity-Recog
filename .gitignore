@@ -249,3 +249,7 @@ ModelManifest.xml
 
 #Compressed files
 *.rar
+
+#Others
+*.npy
+
