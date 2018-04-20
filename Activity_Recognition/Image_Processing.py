@@ -78,23 +78,52 @@ def process_test_data():
 #    return testing_data
 
 #Gets middle frames from videos and gives them names according to format [Name of activity].[Number of video] _[Number of frame] .jpg
-def get_video_frames(route, destRoute):
+#inputs: type (type of frame extraction 1-One 2-Multiple 3-One and mirrored 4-Multiple and mirrored) 
+def get_video_frames(route, destRoute, type):
     for category in LABELS:
         f = 0
         for filename in glob.glob(os.path.join(TRAIN_VIDEO_DIR + category, '*.avi')):
             vidcap = cv2.VideoCapture(filename)        
             length = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
             middle_frame = int(length/2)
-            r1 = range(0, middle_frame)
-            r2 = range(middle_frame + 1, length - 1)
+            r1 = range(3, middle_frame)
+            print(r1)
+            r2 = range(middle_frame + 1, length - 1)    
+            print(r2)      
             second_frame = random.choice(r1)
             third_frame = random.choice(r2)
+            r3 = range(2, second_frame)
+            print(r3)
+            r4 = range(third_frame + 1, length)
+            print(r4)
+            fourth_frame = random.choice(r3)
+            fifth_frame = random.choice(r4)
+
+            nframes = [middle_frame, second_frame, third_frame, fourth_frame, fifth_frame]
+            frames = []
 
             rval, frame = vidcap.read()
             c = 1
-            while rval and c < middle_frame:
-                rval, frame = vidcap.read()
-                c = c + 1
+
+            if(type == 1 or type == 3):
+                while rval and c < middle_frame + 1:
+                    rval, frame = vidcap.read()
+                    if(c == middle_frame):
+                        frames.append(frame)
+                        if(type == 3):
+                            fframe = cv2.flip(frame, 1)
+                            frames.append(fframe)
+                    c = c + 1
+
+            if(type == 2 or type == 4):
+                while rval:
+                    rval, frame = vidcap.read()
+                    if(nframes.count(c) > 0):
+                        frames.append(frame)
+                        if(type == 4):
+                            fframe = cv2.flip(frame, 1)
+                            frames.append(fframe)
+                    c = c + 1
 
             fps = int(vidcap.get(cv2.CAP_PROP_FPS))
             time_length = length/fps
@@ -105,8 +134,13 @@ def get_video_frames(route, destRoute):
             my_video_name = my_video_name.split(".")[0]
             my_video_name = my_video_name.split("_")[-3]
             my_video_name = my_video_name.lower()
-            print(length, middle_frame, second_frame, third_frame, fps, time_length, category, rval, middle_frame)
-            cv2.imwrite(TRAIN_DIR + '/' + category + '/' + category + '.' + str(f + 1) + '_' + str(middle_frame) + '.jpg', frame)
+
+            i = 0
+
+            for imageFrame in frames:
+                print(length, middle_frame, second_frame, third_frame, fps, time_length, category, rval)
+                cv2.imwrite(TRAIN_DIR + '/' + category + '/' + category + '.' + str(f + 1) + '_' + str(i) + '.jpg', imageFrame)
+                i = i + 1
             f = f + 1
             vidcap.release()
 
@@ -145,14 +179,14 @@ def get_video_frames_test(route, destRoute):
 
 
 #Call the functions to create training and testing data
-#training_data = create_train_data()
-testing_data = process_test_data()
+training_data = create_train_data()
+#testing_data = process_test_data()
 
 #Call the functions to load training and testing data from the previously created files
 #train_data = np.load('train_data.npy')
 #test_data = np.load('test_data.npy')
 
-#get_video_frames(TRAIN_VIDEO_DIR, TEST_DIR)
+#get_video_frames(TRAIN_VIDEO_DIR, TRAIN_DIR, 4)
 #get_video_frames_test(TEST_VIDEO_DIR, TEST_DIR)
 
 

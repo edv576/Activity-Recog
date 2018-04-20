@@ -23,23 +23,12 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Cross_validation.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Image_Processing.py" />
-    <Compile Include="KFolds_example.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Mnist classification.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Model_Activity_Recognition.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Predict_Data.py" />
     <Compile Include="Test_Activity_Recognition.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Video.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

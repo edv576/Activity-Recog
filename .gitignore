@@ -246,3 +246,6 @@ ModelManifest.xml
 *.png
 *.mp4
 *.avi
+
+#Compressed files
+*.rar
