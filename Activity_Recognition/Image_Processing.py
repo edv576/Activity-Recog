@@ -17,6 +17,8 @@ TRAIN_VIDEO_DIR = '../data/ucf-101/'
 #Test videos directory
 TEST_VIDEO_DIR = '../data/own/'
 
+TEMP_FOLDER = '../data/temp_optf'
+
 #Size of the image
 IMAGE_SIZE = 120
 #Learning rate to use
@@ -30,9 +32,7 @@ LABELS = ['brushingteeth', 'cuttinginkitchen', 'jumpingjack', 'lunges', 'wallpus
 
 #According to the name of image, get its label
 #Since there are five clases an array of five is used. The number one is used to define the index corresponding to the label
-def label_img(img, categ):
-    word_label = img.split('.')[-3]
-    word_label = word_label.lower()
+def label_img(categ):
     if categ == 'brushingteeth': return[1, 0, 0, 0, 0] 
     elif categ == 'cuttinginkitchen': return[0, 1, 0, 0, 0]
     elif categ == 'jumpingjack': return[0, 0, 1, 0, 0]
@@ -44,7 +44,7 @@ def create_train_data():
     training_data = []
     for category in LABELS:
         for img in tqdm(os.listdir(TRAIN_DIR + category)):
-            label = label_img(img, category)
+            label = label_img(category)
             path = os.path.join(TRAIN_DIR + category, img)
             img = cv2.resize(cv2.imread(path, cv2.IMREAD_COLOR), (IMAGE_SIZE, IMAGE_SIZE))
             training_data.append([np.array(img), np.array(label)])
@@ -57,7 +57,7 @@ def process_test_data():
     testing_data = []
     for category in LABELS:
         for img in tqdm(os.listdir(TEST_DIR + category)):
-            label = label_img(img, category)
+            label = label_img(category)
             path = os.path.join(TEST_DIR + category, img)
             img = cv2.resize(cv2.imread(path, cv2.IMREAD_COLOR), (IMAGE_SIZE, IMAGE_SIZE))
             testing_data.append([np.array(img), np.array(label)])
@@ -146,7 +146,7 @@ def get_video_frames_test(route, destRoute):
 
 #Call the functions to create training and testing data
 #training_data = create_train_data()
-testing_data = process_test_data()
+#testing_data = process_test_data()
 
 #Call the functions to load training and testing data from the previously created files
 #train_data = np.load('train_data.npy')
@@ -155,11 +155,57 @@ testing_data = process_test_data()
 #get_video_frames(TRAIN_VIDEO_DIR, TEST_DIR)
 #get_video_frames_test(TEST_VIDEO_DIR, TEST_DIR)
 
+def create_dense_optflow(video):
+#    if not os.path.exists(TEMP_FOLDER):
+#        os.makedirs(TEMP_FOLDER)
+        
+    cap = cv2.VideoCapture(video)
+    
+    length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    middle_frame = int(length/2)
+    
+    cap.get(7)
+    cap.set(1,middle_frame-2);
+
+    ret, frame1 = cap.read() #middle_frame-1
+    frame1 = cv2.resize(frame1, (IMAGE_SIZE, IMAGE_SIZE)) 
+    prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
+    hsv = np.zeros_like(frame1)
+    hsv[...,1] = 255
+
+    ret, frame2 = cap.read()
+    frame2 = cv2.resize(frame2, (IMAGE_SIZE, IMAGE_SIZE)) 
+    next = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+
+    flow = cv2.calcOpticalFlowFarneback(prvs,next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+
+    mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
+    hsv[...,0] = ang*180/np.pi/2
+    hsv[...,2] = cv2.normalize(mag,None,0,255,cv2.NORM_MINMAX)
+    rgb = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+
+    #cv2.imwrite(TEMP_FOLDER + '/' + str(i) + '.jpg',rgb)
+    cap.release()
+    return rgb
+    
+
+def create_optflows_data(folder_data):
+    opticalflows = []
+    i = 1
+    for category in LABELS:
+        for video in glob.glob(os.path.join(folder_data + category, '*.avi')):
+            print(i, '. ', video)
+            img = create_dense_optflow(video)
+            label = label_img(category)
+            opticalflows.append([np.array(img), np.array(label)])
+            i = i + 1
+    
+    np.save('train_optical_data.npy', opticalflows)
+    print('Created train_optical_data.npy')
+    return opticalflows
 
 
-
-
-
+create_optflows_data(TRAIN_VIDEO_DIR)
 
  
 
