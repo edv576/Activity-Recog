@@ -6,7 +6,7 @@
     <ProjectGuid>a48760b5-6680-4d93-a6bb-e703c062f11a</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>Test_Activity_Recognition.py</StartupFile>
+    <StartupFile>Image_Processing.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

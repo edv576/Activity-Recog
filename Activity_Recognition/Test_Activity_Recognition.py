@@ -11,28 +11,51 @@ fig = plt.figure()
 #Iterates over the number of examples we want to test
 #[:12] means take all examples from the beginning to the number 12
 for num, data in enumerate(test_data):
-    img_num = data[1]
+    img_cat = str(data[1])
     img_data = data[0]
     
     
     y = fig.add_subplot(5, 7, num + 1)
     orig = img_data
-    data = img_data.reshape(ip.IMAGE_SIZE, ip.IMAGE_SIZE, 1)
+    data = img_data.reshape(ip.IMAGE_SIZE, ip.IMAGE_SIZE, 3)
     
     #Predicts the label for one of the test images
-    model_out =  mar.model2.predict([data])[0]
+    model_out =  mar.final_model.predict([data])[0]
 
     #The category is decided
     if(np.argmax(model_out) == 0):
-        str_label = 'Brushing teeth'
+        str_label = 'Brushing Teeth'
+        if(img_cat.lower() == 'brushingteeth'):
+            str_label = str_label + 'True'
+        else:
+            str_label = str_label + 'False'    
+
     elif(np.argmax(model_out) == 1):
         str_label = 'Cutting in Kitchen'
+        if(img_cat.lower() == 'cuttinginkitchen'):
+            str_label = str_label + 'True'
+        else:
+            str_label = str_label + 'False' 
+
     elif(np.argmax(model_out) == 2):
         str_label = 'Jumping Jack'
+        if(img_cat.lower() == 'jumpingjack'):
+            str_label = str_label + 'True'
+        else:
+            str_label = str_label + 'False' 
     elif(np.argmax(model_out) == 3):
         str_label = 'Lunges'
+        if(img_cat.lower() == 'lunges'):
+            str_label = str_label + 'True'
+        else:
+            str_label = str_label + 'False' 
+
     elif(np.argmax(model_out) == 4):
         str_label = 'Wall Pushups'
+        if(img_cat.lower() == 'wallpushups'):
+            str_label = str_label + 'True'
+        else:
+            str_label = str_label + 'False' 
 
     #Draws the test image in greyscale
     y.imshow(orig, cmap='gray')
