@@ -232,7 +232,54 @@ def get_video_frames_test(route, destRoute):
         f = f + 1
         vidcap.release()
 
+def create_dense_optflow(video):
+#    if not os.path.exists(TEMP_FOLDER):
+#        os.makedirs(TEMP_FOLDER)
+        
+    cap = cv2.VideoCapture(video)
+    
+    length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    middle_frame = int(length/2)
+    
+    cap.get(7)
+    cap.set(1,middle_frame-2);
 
+    ret, frame1 = cap.read() #middle_frame-1
+    frame1 = cv2.resize(frame1, (IMAGE_SIZE, IMAGE_SIZE)) 
+    prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
+    hsv = np.zeros_like(frame1)
+    hsv[...,1] = 255
+
+    ret, frame2 = cap.read()
+    frame2 = cv2.resize(frame2, (IMAGE_SIZE, IMAGE_SIZE)) 
+    next = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+
+    flow = cv2.calcOpticalFlowFarneback(prvs,next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+
+    mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
+    hsv[...,0] = ang*180/np.pi/2
+    hsv[...,2] = cv2.normalize(mag,None,0,255,cv2.NORM_MINMAX)
+    rgb = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+
+    #cv2.imwrite(TEMP_FOLDER + '/' + str(i) + '.jpg',rgb)
+    cap.release()
+    return rgb
+    
+
+def create_optflows_data(folder_data):
+    opticalflows = []
+    i = 1
+    for category in LABELS:
+        for video in glob.glob(os.path.join(folder_data + category, '*.avi')):
+            print(i, '. ', video)
+            img = create_dense_optflow(video)
+            label = label_img(category)
+            opticalflows.append([np.array(img), np.array(label)])
+            i = i + 1
+    
+    np.save('train_optical_data.npy', opticalflows)
+    print('Created train_optical_data.npy')
+    return opticalflows
 
 #Call the functions to create training and testing data
 #training_data = create_train_data()
