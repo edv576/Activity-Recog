@@ -201,11 +201,42 @@ def get_video_frames_test_v(route, destRoute):
             f = f + 1
             vidcap.release()
 
+def get_video_frames_test(route, destRoute):
+    f = 0
+    for filename in glob.glob(os.path.join(route, '*.avi')):
+        vidcap = cv2.VideoCapture(filename)        
+        length = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
+        middle_frame = int(length/2)
+        r1 = range(0, middle_frame)
+        r2 = range(middle_frame + 1, length - 1)
+        second_frame = random.choice(r1)
+        third_frame = random.choice(r2)
+
+        rval, frame = vidcap.read()
+        c = 1
+        while rval and c < middle_frame:
+            rval, frame = vidcap.read()
+            c = c + 1
+
+        fps = int(vidcap.get(cv2.CAP_PROP_FPS))
+        time_length = length/fps
+        #frame_no = (50 /(time_length*fps))
+        #vidcap.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
+        #ret,image = vidcap.read()
+        my_video_name = filename.split("\\")[-1]
+        my_video_name = my_video_name.split(".")[0]
+        #my_video_name = my_video_name.split("_")[-3]
+        my_video_name = my_video_name.lower()
+        print(length, middle_frame, second_frame, third_frame, fps, time_length, my_video_name, rval)
+        cv2.imwrite(destRoute + '/' + my_video_name + '.' + str(f + 1) + '_' + str(middle_frame) + '.jpg', frame)
+        f = f + 1
+        vidcap.release()
+
 
 
 #Call the functions to create training and testing data
 #training_data = create_train_data()
-#testing_data = process_test_data()
+testing_data = process_test_data()
 
 #Call the functions to load training and testing data from the previously created files
 #train_data = np.load('train_data.npy')
@@ -213,7 +244,7 @@ def get_video_frames_test_v(route, destRoute):
 
 #get_video_frames(TRAIN_VIDEO_DIR, TRAIN_DIR, 4)
 #get_video_frames_test(TEST_VIDEO_DIR, TEST_DIR)
-get_video_frames_test_v(TEST_VIDEO_DIR, TEST_DIR)
+#get_video_frames_test_v(TEST_VIDEO_DIR, TEST_DIR)
 
 
 
