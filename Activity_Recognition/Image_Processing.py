@@ -70,13 +70,36 @@ def process_test_data():
 
 def process_test_video(frames_video, video_name, category):
     testing_data = []
+    testing_data_ft = []
+    testing_data_st = []
+    testing_data_tt = []
 
+    number_frames = len(frames_video)
+    first_limit = int(number_frames / 3)
+    second_limit = 2 * first_limit
+
+    c = 1
     for frame in frames_video:
         label = label_img(frame, category)
         frame = cv2.resize(frame, (IMAGE_SIZE, IMAGE_SIZE))
         testing_data.append([np.array(frame), np.array(label)])
+        if(c >= 1 and c <= first_limit):
+            testing_data_ft.append([np.array(frame), np.array(label)])
+        elif(c > first_limit and c <= second_limit):
+            testing_data_st.append([np.array(frame), np.array(label)])
+        elif(c > second_limit and c <= number_frames):
+            testing_data_tt.append([np.array(frame), np.array(label)])
+        c = c + 1
 
-    np.save(FULL_VIDEO_DIR + 'test_data' + '_' + video_name + '.npy', testing_data)
+
+
+    np.save(FULL_VIDEO_DIR + 'test_data' + '_' + video_name + '_OF' + '.npy', testing_data)
+    #np.save(FULL_VIDEO_DIR + 'test_data' + '_' + video_name + '_' + str(1) + '.npy', testing_data_ft)
+    #np.save(FULL_VIDEO_DIR + 'test_data' + '_' + video_name + '_' + str(2) + '.npy', testing_data_st)
+    #np.save(FULL_VIDEO_DIR + 'test_data' + '_' + video_name + '_' + str(3) + '.npy', testing_data_tt)
+
+    print(video_name)
+
     return testing_data
 
 #def process_test_data():
@@ -232,38 +255,72 @@ def get_video_frames_test(route, destRoute):
         f = f + 1
         vidcap.release()
 
-def create_dense_optflow(video):
+def create_dense_optflow(origDir, destDir, option, separate):
 #    if not os.path.exists(TEMP_FOLDER):
 #        os.makedirs(TEMP_FOLDER)
-        
-    cap = cv2.VideoCapture(video)
+    for category in LABELS:
+        f = 0
+        for filename in glob.glob(os.path.join(origDir + category, '*.avi')):
+            cap = cv2.VideoCapture(filename)
     
-    length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    middle_frame = int(length/2)
+            length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            middle_frame = int(length/2)
     
-    cap.get(7)
-    cap.set(1,middle_frame-2);
+            #cap.get(7)
+            #cap.set(1,middle_frame-2);
 
-    ret, frame1 = cap.read() #middle_frame-1
-    frame1 = cv2.resize(frame1, (IMAGE_SIZE, IMAGE_SIZE)) 
-    prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
-    hsv = np.zeros_like(frame1)
-    hsv[...,1] = 255
+            ret, frame1 = cap.read() #middle_frame-1
 
-    ret, frame2 = cap.read()
-    frame2 = cv2.resize(frame2, (IMAGE_SIZE, IMAGE_SIZE)) 
-    next = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+            ofFrames = []
 
-    flow = cv2.calcOpticalFlowFarneback(prvs,next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+            c = 1
+            limit = middle_frame + 1
 
-    mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
-    hsv[...,0] = ang*180/np.pi/2
-    hsv[...,2] = cv2.normalize(mag,None,0,255,cv2.NORM_MINMAX)
-    rgb = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+            if(option == 2):
+                limit = length -1
 
-    #cv2.imwrite(TEMP_FOLDER + '/' + str(i) + '.jpg',rgb)
-    cap.release()
-    return rgb
+
+
+
+            while ret and c < limit:
+                frame1 = cv2.resize(frame1, (IMAGE_SIZE, IMAGE_SIZE)) 
+                prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
+                hsv = np.zeros_like(frame1)
+                hsv[...,1] = 255
+                ret, frame2 = cap.read()
+                frame2 = cv2.resize(frame2, (IMAGE_SIZE, IMAGE_SIZE)) 
+                next = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+                flow = cv2.calcOpticalFlowFarneback(prvs,next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+                mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
+                hsv[...,0] = ang*180/np.pi/2
+                hsv[...,2] = cv2.normalize(mag,None,0,255,cv2.NORM_MINMAX)
+                rgb = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+                frame1 = frame2
+                ofFrames.append(rgb)
+                c = c + 1
+
+            middle_of = rgb
+            
+            i = 0
+
+            if(option == 1):
+                cv2.imwrite(destDir + '/' + category + '/' + category + '.' + str(f + 1) + '_MF' + '_OF'  + '.jpg', middle_of)
+            else:
+                for imageFrame in ofFrames:
+                    cv2.imwrite(destDir + '/' + category + '/' + category + '.' + str(f + 1) + '_' + str(i) + '_OF'  + '.jpg', imageFrame)
+                    print(category, f, i)
+                    i = i + 1  
+                
+                if(separate):
+                    video_name = category + '.' + str(f + 1)
+                    process_test_video(ofFrames, video_name, category)
+                    
+                                       
+
+            f = f + 1
+            #cv2.imwrite(TEMP_FOLDER + '/' + str(i) + '.jpg',rgb)
+            cap.release()
+           
     
 
 def create_optflows_data(folder_data):
@@ -281,15 +338,17 @@ def create_optflows_data(folder_data):
     print('Created train_optical_data.npy')
     return opticalflows
 
+
+create_dense_optflow(TEST_VIDEO_DIR, TEST_DIR, 2, True)
 #Call the functions to create training and testing data
 #training_data = create_train_data()
-testing_data = process_test_data()
+#testing_data = process_test_data()
 
 #Call the functions to load training and testing data from the previously created files
 #train_data = np.load('train_data.npy')
 #test_data = np.load('test_data.npy')
 
-#get_video_frames(TRAIN_VIDEO_DIR, TRAIN_DIR, 4)
+#get_video_frames(TRAIN_VIDEO_DIR, TRAIN_DIR, 1)
 #get_video_frames_test(TEST_VIDEO_DIR, TEST_DIR)
 #get_video_frames_test_v(TEST_VIDEO_DIR, TEST_DIR)
 

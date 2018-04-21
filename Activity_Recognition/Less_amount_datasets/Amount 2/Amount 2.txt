@@ -1,0 +1,7 @@
+BrushingTeeth		26
+CuttingInKitchen 	26
+JumpingJack		25
+Lunges			27
+WallPushups		28
+
+Total			132
