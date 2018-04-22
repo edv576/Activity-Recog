@@ -34,8 +34,6 @@ LABELS = ['brushingteeth', 'cuttinginkitchen', 'jumpingjack', 'lunges', 'wallpus
 #According to the name of image, get its label
 #Since there are five clases an array of five is used. The number one is used to define the index corresponding to the label
 def label_img(img, categ):
-    #word_label = img.split('.')[-3]
-    #word_label = word_label.lower()
     if categ == 'brushingteeth': return[1, 0, 0, 0, 0] 
     elif categ == 'cuttinginkitchen': return[0, 1, 0, 0, 0]
     elif categ == 'jumpingjack': return[0, 0, 1, 0, 0]
@@ -68,6 +66,22 @@ def process_test_data():
     np.save('test_data.npy', testing_data)
     return testing_data
 
+#Saves dataset for full test videos in 3 parts: 1 for the beginning, 1 for the middle and 1 for the end of every video.
+def process_test_data_parts(nParts):
+    i = 0
+    while i < nParts:
+        testing_data = []
+        for category in LABELS:
+            for img in tqdm(os.listdir(TEST_DIR + category + '/' + str(i + 1))):
+                label = label_img(img, category)
+                path = os.path.join(TEST_DIR + category + '/' + str(i + 1), img)
+                img = cv2.resize(cv2.imread(path, cv2.IMREAD_COLOR), (IMAGE_SIZE, IMAGE_SIZE))
+                testing_data.append([np.array(img), np.array(label)])
+
+        np.save('test_data' + '_' + str(i + 1) + '.npy', testing_data)
+        i = i + 1
+
+#Saves dataset for individual test videos
 def process_test_video(frames_video, video_name, category):
     testing_data = []
     testing_data_ft = []
@@ -167,10 +181,10 @@ def get_video_frames(route, destRoute, type):
             #frame_no = (middle_frame /(time_length*fps))
             #vidcap.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
             #ret,image = vidcap.read()
-            my_video_name = filename.split("\\")[-1]
-            my_video_name = my_video_name.split(".")[0]
-            my_video_name = my_video_name.split("_")[-3]
-            my_video_name = my_video_name.lower()
+            #my_video_name = filename.split("\\")[-1]
+            #my_video_name = my_video_name.split(".")[0]
+            #my_video_name = my_video_name.split("_")[-3]
+            #my_video_name = my_video_name.lower()
 
             i = 0
 
@@ -181,6 +195,7 @@ def get_video_frames(route, destRoute, type):
             f = f + 1
             vidcap.release()
 
+#Saves all the frames of a video and saves them in individual datasets. Calls process_test_video to do so.
 def get_video_frames_test_v(route, destRoute):
     for category in LABELS:
         f = 0
@@ -224,6 +239,79 @@ def get_video_frames_test_v(route, destRoute):
             f = f + 1
             vidcap.release()
 
+#Saves all the frames of a video and saves them in individual datasets, separating them by frames at the beginning/middle/end of a a video.
+#Calls process_test_video to do so.
+def get_video_frames_test_v_parts(route, destRoute):
+    for category in LABELS:
+        f = 0
+        for filename in glob.glob(os.path.join(TEST_VIDEO_DIR + category, '*.avi')):
+            vidcap = cv2.VideoCapture(filename)        
+            length = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
+            middle_frame = int(length/2)
+            r1 = range(0, middle_frame)
+            r2 = range(middle_frame + 1, length - 1)
+            second_frame = random.choice(r1)
+            third_frame = random.choice(r2)
+
+            number_frames = length
+            first_limit = int(number_frames / 3)
+            second_limit = 2 * first_limit
+
+            frames = []
+            frames_fp = []
+            frames_sp = []
+            frames_tp = []
+
+            rval, frame = vidcap.read()
+            c = 1
+            while rval:
+                if(c >= 1 and c <= first_limit):
+                    frames_fp.append(frame)      
+                elif(c > first_limit and c <= second_limit):
+                    frames_sp.append(frame) 
+                elif(c > second_limit and c <= number_frames):
+                    frames_tp.append(frame) 
+                frames.append(frame)
+                rval, frame = vidcap.read()               
+                c = c + 1
+
+            fps = int(vidcap.get(cv2.CAP_PROP_FPS))
+            time_length = length/fps
+            #frame_no = (50 /(time_length*fps))
+            #vidcap.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
+            #ret,image = vidcap.read()
+            my_video_name = filename.split("\\")[-1]
+            my_video_name = my_video_name.split(".")[0]
+            #my_video_name = my_video_name.split("_")[-3]
+            my_video_name = my_video_name.lower()
+            video_name = category + '.' + str(f + 1)
+            print(length, fps, time_length, video_name, rval)
+            process_test_video(frames, video_name, category)
+
+            i = 0
+            for imageFrame in frames:
+                cv2.imwrite(TEST_DIR + '/' + category + '/' + category + '.' + str(f + 1) + '_' + str(i) + '.jpg', imageFrame)
+                i = i + 1
+            
+            i = 0
+            for imageFrame in frames_fp:
+                cv2.imwrite(TEST_DIR + '/' + category + '/1/' + category + '.' + str(f + 1) + '_' + str(i) + '_1' + '.jpg', imageFrame)
+                i = i + 1
+
+            i = 0
+            for imageFrame in frames_sp:
+                cv2.imwrite(TEST_DIR + '/' + category + '/2/' + category + '.' + str(f + 1) + '_' + str(i) + '_2' + '.jpg', imageFrame)
+                i = i + 1
+            
+            i = 0
+            for imageFrame in frames_tp:
+                cv2.imwrite(TEST_DIR + '/' + category + '/3/' + category + '.' + str(f + 1) + '_' + str(i) + '_3' + '.jpg', imageFrame)
+                i = i + 1
+
+            f = f + 1
+            vidcap.release()
+
+#Gets the middle frames of a test video and saves them in a destiny route. These frames are used latter to create datasets. 
 def get_video_frames_test(route, destRoute):
     f = 0
     for filename in glob.glob(os.path.join(route, '*.avi')):
@@ -255,6 +343,9 @@ def get_video_frames_test(route, destRoute):
         f = f + 1
         vidcap.release()
 
+#Creates datasets for optical flows for the videos find in origDir. Gives the option to take the middle optical flow or all of them in a video.
+#Options: 1 (only the middle optical flow), 2 (all the optical flows)
+#separate is a boolean that indicates if the datasets should be created per video or all in one file.
 def create_dense_optflow(origDir, destDir, option, separate):
 #    if not os.path.exists(TEMP_FOLDER):
 #        os.makedirs(TEMP_FOLDER)
@@ -318,39 +409,114 @@ def create_dense_optflow(origDir, destDir, option, separate):
                                        
 
             f = f + 1
-            #cv2.imwrite(TEMP_FOLDER + '/' + str(i) + '.jpg',rgb)
+            cap.release()
+
+#Creates frames for optical flows and then stores them into destDir
+def create_dense_optflow_parts(origDir, destDir):
+#    if not os.path.exists(TEMP_FOLDER):
+#        os.makedirs(TEMP_FOLDER)
+    for category in LABELS:
+        f = 0
+        for filename in glob.glob(os.path.join(origDir + category, '*.avi')):
+            cap = cv2.VideoCapture(filename)
+    
+            length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            middle_frame = int(length/2)
+    
+            #cap.get(7)
+            #cap.set(1,middle_frame-2);
+
+            ret, frame1 = cap.read() #middle_frame-1
+
+            number_frames = length
+            first_limit = int(number_frames / 3)
+            second_limit = 2 * first_limit
+
+            ofFrames = []
+            ofFrames_fp = []
+            ofFrames_sp = []
+            ofFrames_tp = []
+
+            c = 1
+ 
+
+
+            while ret and c < length - 1:
+                frame1 = cv2.resize(frame1, (IMAGE_SIZE, IMAGE_SIZE)) 
+                prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
+                hsv = np.zeros_like(frame1)
+                hsv[...,1] = 255
+                ret, frame2 = cap.read()
+                frame2 = cv2.resize(frame2, (IMAGE_SIZE, IMAGE_SIZE)) 
+                next = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+                flow = cv2.calcOpticalFlowFarneback(prvs,next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+                mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
+                hsv[...,0] = ang*180/np.pi/2
+                hsv[...,2] = cv2.normalize(mag,None,0,255,cv2.NORM_MINMAX)
+                rgb = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+                frame1 = frame2
+                ofFrames.append(rgb)
+                if(c >= 1 and c <= first_limit):
+                    ofFrames_fp.append(rgb)      
+                elif(c > first_limit and c <= second_limit):
+                    ofFrames_sp.append(rgb) 
+                elif(c > second_limit and c <= number_frames):
+                    ofFrames_tp.append(rgb) 
+
+                c = c + 1
+
+            middle_of = rgb
+            
+            i = 0
+
+     
+            for imageFrame in ofFrames:
+                cv2.imwrite(destDir + '/' + category + '/' + category + '.' + str(f + 1) + '_' + str(i) + '_OF'  + '.jpg', imageFrame)
+                print(category, f, i)
+                i = i + 1  
+            
+            i = 0
+            for imageFrame in ofFrames_fp:
+                cv2.imwrite(destDir + '/' + category + '/1/' + category + '.' + str(f + 1) + '_' + str(i) + '_1' + '.jpg', imageFrame)
+                i = i + 1
+
+            i = 0
+            for imageFrame in ofFrames_sp:
+                cv2.imwrite(destDir + '/' + category + '/2/' + category + '.' + str(f + 1) + '_' + str(i) + '_2' + '.jpg', imageFrame)
+                i = i + 1
+            
+            i = 0
+            for imageFrame in ofFrames_tp:
+                cv2.imwrite(destDir + '/' + category + '/3/' + category + '.' + str(f + 1) + '_' + str(i) + '_3' + '.jpg', imageFrame)
+                i = i + 1 
+                    
+                                       
+
+            f = f + 1
+
             cap.release()
            
-    
-
-def create_optflows_data(folder_data):
-    opticalflows = []
-    i = 1
-    for category in LABELS:
-        for video in glob.glob(os.path.join(folder_data + category, '*.avi')):
-            print(i, '. ', video)
-            img = create_dense_optflow(video)
-            label = label_img(category)
-            opticalflows.append([np.array(img), np.array(label)])
-            i = i + 1
-    
-    np.save('train_optical_data.npy', opticalflows)
-    print('Created train_optical_data.npy')
-    return opticalflows
 
 
-create_dense_optflow(TEST_VIDEO_DIR, TEST_DIR, 2, True)
+
+#Call functions to create optical flows
+#create_dense_optflow(TEST_VIDEO_DIR, TEST_DIR, 2, True)
+#create_dense_optflow_parts(TEST_VIDEO_DIR, TEST_DIR)
 #Call the functions to create training and testing data
 #training_data = create_train_data()
 #testing_data = process_test_data()
+
 
 #Call the functions to load training and testing data from the previously created files
 #train_data = np.load('train_data.npy')
 #test_data = np.load('test_data.npy')
 
+#Calls functions to create frames from videos
 #get_video_frames(TRAIN_VIDEO_DIR, TRAIN_DIR, 1)
 #get_video_frames_test(TEST_VIDEO_DIR, TEST_DIR)
 #get_video_frames_test_v(TEST_VIDEO_DIR, TEST_DIR)
+#get_video_frames_test_v_parts(TEST_VIDEO_DIR, TEST_DIR)
+#process_test_data_parts(3)
 
 
 
